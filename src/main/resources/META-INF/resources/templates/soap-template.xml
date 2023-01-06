@@ -1,0 +1,26 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:cfec="http://www.fazenda.sp.gov.br/sat/wsdl/CfeConsultaLotes">
+    <soapenv:Header>
+        <cfec:cfeCabecMsg>
+            <!--Optional:-->
+            <cfec:cUF>//ufCode</cfec:cUF>
+            <!--Optional:-->
+            <cfec:versaoDados>0.06</cfec:versaoDados>
+        </cfec:cfeCabecMsg>
+    </soapenv:Header>
+    <soapenv:Body>
+        <cfec:CfeConsultarLotes>
+            <!--Optional:-->
+            <cfec:cfeDadosMsg>
+                <![CDATA[
+        <consLote xmlns="http://www.fazenda.sp.gov.br/sat" versao="0.06">
+            <nserieSAT>//satNumber</nserieSAT>
+            <dhInicial>//startDate</dhInicial>
+            <dhFinal>//endDate</dhFinal>
+            <chaveSeguranca>//key</chaveSeguranca>
+        </consLote>
+                ]]>
+            </cfec:cfeDadosMsg>
+        </cfec:CfeConsultarLotes>
+    </soapenv:Body>
+</soapenv:Envelope>

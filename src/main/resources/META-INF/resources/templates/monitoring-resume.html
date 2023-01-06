@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang=pt xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset=UTF-8>
+    <title>Test Template</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: medium;
+        }
+        td, th {
+            border-bottom: 2px solid orangered;
+        }
+        table {
+            width: 100%;
+            justify-content: center;
+            justify-self: center;
+            color: orangered;
+            text-align: center;
+            font-family: 'Roboto', serif;
+            font-size: medium;
+        }
+        h3 {
+            text-align: center;
+            color: orangered;
+            font-family: 'Roboto', serif;
+            text-decoration-thickness: 2px;
+        }
+        div {
+            margin: auto;
+            width: 100%;
+            justify-content: center;
+            padding: 10px;
+        }
+        span {
+            width: 100%;
+        }
+        .label {
+            color: white;
+        }
+        .success {background-color: #04AA6D;} /* Green */
+        .danger {background-color: #f44336;} /* Red */
+    </style>
+</head>
+<body>
+<h3>Resumo de Alertas</h3>
+<div>
+    <table>
+        <thead>
+        <tr>
+            <th>Monitoramento</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Confluence</th>
+            <th>Reports</th>
+            <th>Última verificação</th>
+            <th>Responsável</th>
+        </tr>
+        </thead>
+        <!--/*@thymesVar id="monitoring" type="jiren.data.entity.Monitoring"*/-->
+        <tr th:each="monitoring: ${objlist}">
+            <td th:text="${monitoring.name}"></td>
+            <td th:text="${monitoring.type}">Type1</td>
+            <td th:switch="${monitoring.status.toString()}">
+                <span th:case="'OK'" class="label success"></span>
+                <span th:case="'NOK'" class="label danger"></span>
+            </td>
+            <td><a th:href="${monitoring.documentURL}" target="_blank">Ajuda</a></td>
+            <td th:text="${monitoring.errorCount}"></td>
+            <td th:text="${monitoring.ranAt}"></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

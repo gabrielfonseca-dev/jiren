@@ -1,0 +1,92 @@
+@charset "utf-8";
+
+.badge-success {
+    background-color: green;
+}
+
+.badge-danger {
+    background-color: red;
+}
+
+.container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.darker {
+  border-color: #ccc;
+  background-color: #ddd;
+  border: 1px solid;
+}
+
+.paragraph-right {
+    text-align:right
+}
+
+.paragraph-left {
+    text-align:left
+}
+
+.dark {
+  border-color: #ccc;
+  background-color: #f1f1f1;
+  border: 1px solid;
+}
+
+.time-right {
+  float: right;
+  color: #aaa;
+}
+
+.time-left {
+  float: left;
+  color: #999;
+}
+
+.badge-warning {
+    background-color: sandybrown;
+}
+
+.badge-secondary {
+    background-color: gray;
+}
+
+.bottomborder {
+    border-bottom: 2px solid #FF4500FF;
+}
+
+.hover:hover {
+    background-color: orangered;
+}
+
+.marginl {
+    margin-left: 5px;
+}
+
+.zero-margin {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 1px;
+}
+
+h4 {
+    color: #FF4500FF;
+    font-family: Rubik, serif;
+    font-weight: bold;
+}
+
+h3 {
+    color: #FF4500FF;
+    font-family: Rubik, serif;
+}
+
+h2 {
+    color: #FF4500FF;
+    font-family: Rubik, serif;
+}
+
+a {
+    text-decoration-color: #FF4500FF;
+    font-family: Rubik, serif;
+}

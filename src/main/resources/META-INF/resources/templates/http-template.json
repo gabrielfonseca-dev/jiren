@@ -1,0 +1,8 @@
+{
+  "url": "",
+  "timeout": 1,
+  "contentType": "application/json",
+  "expectedCode": 200,
+  "method": "POST",
+  "body": ""
+}

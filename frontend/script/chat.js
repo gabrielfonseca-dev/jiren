@@ -1,0 +1,1 @@
+window.setInterval(function update() {document.getElementById("refresher").$server.updateChat()}, 2500);
