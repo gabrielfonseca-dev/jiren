@@ -284,7 +284,7 @@ class TwilioClient {
                         if (operatorPhone != null) {
                             messageController.save(jiren.data.entity.twilio.Message().outcoming(defaultMessages.CODE_LIVE_CHAT,instance,from = form.to!!,to = form.from!!,defaultMessages.ASK_TO_WAIT_FOR_CONTACT))
                             if (split != null && split.contains("SHIFT")) {
-                                sendMessage(instance,"Ola, por favor entre em contato com ${instance.contactName} atraves do numero ${instance.contact}")
+                                sendMessage(instance.contact!!, operatorPhone,"Ola, por favor entre em contato com ${instance.contactName} atraves do numero ${instance.contact}")
                             }
                             Message.Builder(defaultMessages.ASK_TO_WAIT_FOR_CONTACT).build()
                         } else {
@@ -344,6 +344,19 @@ class TwilioClient {
             .create()
 
         return message
+    }
+
+    fun sendMessage(from: String, to: String, msg: String) {
+        Twilio.init(
+            credentialsService.twilioConfig.getString(credentialsService.twilioClient),
+            credentialsService.twilioConfig.getString(credentialsService.twilioSecret)
+        )
+
+        TwilioMessage.creator(
+            PhoneNumber(to),
+            PhoneNumber(from),
+            msg)
+            .create()
     }
 
 }

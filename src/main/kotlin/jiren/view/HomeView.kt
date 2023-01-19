@@ -178,10 +178,9 @@ class HomeView(
             val columnDay = DateTimeFormatter.ofPattern("dd.MM.yyyy").format(today.plusDays(i.toLong()))
             val date = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(today.plusDays(i.toLong()))
             val dateFrom = Timestamp.valueOf("$date 00:00:00")
-            val dateTo = Timestamp.valueOf("$date 23:59:59")
             dayColumn.add(columnDay)
 
-            val dayPersons = shiftController.search(dateFrom.toLocalDateTime(), dateTo.toLocalDateTime())
+            val dayPersons = shiftController.search(dateFrom.toLocalDateTime())
             dayPersons?.forEach {
                 val span = Span(it.plantonyst?.name)
                 span.addClassNames("badge", "badge-secondary", "spansize")

@@ -91,7 +91,7 @@ class UserController(
 
     fun getAvailableUser(instance: Instance): String? {
         val connectedUsers = userRepository.findByStatus(StatusUser.CONECTADO)?.toMutableList()
-        val shifts = shiftRepository.findByStartDateBetween(Timestamp.from(now()),Timestamp.from(now().plusSeconds(300)))
+        val shifts = shiftRepository.dateBetween(Timestamp.from(now()))
         val user: User?
         if(connectedUsers.isNullOrEmpty()) {
             return if(shifts.isNullOrEmpty()) {

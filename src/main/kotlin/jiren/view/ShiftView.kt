@@ -94,22 +94,19 @@ class ShiftView(
 
     private fun createSearch(): FormLayout {
         val startDate = DateTimePicker("Do dia")
-        val endDate = DateTimePicker("Até o dia")
         val searchButton = Button("Buscar", Icon("search"))
         searchButton.addClickListener {
-            if (startDate.value == null || endDate.value == null) {
+            if (startDate.value == null) {
                 startDate.helperText = "Campo obrigatório"
-                endDate.helperText = "Campo obrigatório"
             } else {
-                this.table.setItems(this.shiftController.search(startDate.value, endDate.value))
+                this.table.setItems(this.shiftController.search(startDate.value))
                 startDate.helperText = ""
-                endDate.helperText = ""
             }
         }
-        val searchPanel = FormLayout()
         val optionsGroup = HorizontalLayout(searchButton)
         optionsGroup.defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
-        searchPanel.add(startDate, endDate, optionsGroup)
+        val searchPanel = FormLayout()
+        searchPanel.add(startDate, optionsGroup)
         return searchPanel
     }
 

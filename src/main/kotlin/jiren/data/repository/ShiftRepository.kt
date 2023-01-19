@@ -8,7 +8,6 @@ import java.sql.Timestamp
 
 @Repository
 interface ShiftRepository : JpaRepository<Shift, Long> {
-    @Query("select s from shifts s where s.start between :startDate and :endDate")
-    fun findByStartDateBetween(startDate: Timestamp?, endDate: Timestamp?): List<Shift>?
+    @Query("select s from shifts s where :date between s.start and s.end")
+    fun dateBetween(date: Timestamp?): List<Shift>?
 }
-

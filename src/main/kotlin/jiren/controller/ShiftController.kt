@@ -15,8 +15,8 @@ class ShiftController(private var userRepository: UserRepository, private var sh
         return userRepository.findShiftOfficers()
     }
 
-    fun search(start: LocalDateTime, end: LocalDateTime): List<Shift>? {
-        return shiftRepository.findByStartDateBetween(Timestamp.valueOf(start), Timestamp.valueOf(end))
+    fun search(start: LocalDateTime): List<Shift>? {
+        return shiftRepository.dateBetween(Timestamp.valueOf(start))
     }
 
     fun save(shift: Shift): Shift {
