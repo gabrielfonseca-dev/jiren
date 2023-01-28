@@ -62,9 +62,10 @@ Vaadin é uma biblioteca de componentes web open-source para desenvolvimento de 
 **Config**
 -
 **Ambiente Produção**
-- Compile: <*mvn clean package -P prod*>
 
-A melhor alternativa para executar um webapp escrito em Java com Spring Boot na AWS é usar o Elastic Beanstalk. Ele é uma plataforma de serviços gerenciados que facilita a implantação, a escalabilidade e o monitoramento de aplicativos web. Ele também integra-se com outros serviços da AWS, como o RDS para banco de dados e o S3 para armazenamento de arquivos. Ele é projetado especificamente para aplicativos Java e suporta o Spring Boot out of the box
+Compile: *mvn clean package -P prod*
+
+A melhor alternativa para executar um webapp escrito em Java com Spring Boot na AWS é usar o Elastic Beanstalk. 
 
 A gestão das credenciais utilizadas pela aplicação é realizada através do AWS Secrets Manager, são necessárias as seguintes credenciais:
 
