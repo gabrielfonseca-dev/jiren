@@ -63,7 +63,6 @@ class SecurityConfig : GlobalMethodSecurityConfiguration() {
             .antMatchers("/ti/**").hasAnyAuthority("ADMIN", "TI")
             .anyRequest().authenticated()
             .and().oauth2Login().loginPage("/oauth2/authorization/cognito")
-            .and().requiresChannel().anyRequest().requiresSecure()
             .and().logout().logoutSuccessUrl("/home")
         return http.build()
     }

@@ -30,20 +30,6 @@ Uma aplicação de gerenciamento e monitoramento de serviços que permite aos us
 
 Spring Boot é um framework de desenvolvimento Java criado pela Spring Source (agora parte da Pivotal) que facilita a criação de aplicações autônomas, de alto desempenho e prontas para produção. Ele utiliza a popular estrutura Spring Framework e fornece uma série de recursos e ferramentas para ajudar os desenvolvedores a construir aplicações Java de forma rápida e fácil, sem a necessidade de configuração excessiva.
 
-Alguns dos recursos do Spring Boot incluem:
-
-Configuração automática: Spring Boot usa a convenção sobre configuração, o que significa que ele configura automaticamente as coisas para você, sem necessidade de criar arquivos de configuração complexos.
-
-Execução independente: As aplicações Spring Boot podem ser executadas como aplicativos Java regulares, sem a necessidade de um container de aplicativo ou outro software de gerenciamento de configuração.
-
-Ferramentas de desenvolvimento: Spring Boot fornece uma série de ferramentas de desenvolvimento, como o Spring Initializer, que ajuda a criar projetos Spring Boot rapidamente, e o Spring CLI, que permite aos desenvolvedores executar comandos Spring Boot diretamente do terminal.
-
-Suporte para bancos de dados: Spring Boot oferece suporte nativo para vários bancos de dados, incluindo MySQL, PostgreSQL, Oracle e MongoDB, entre outros.
-
-Suporte para segurança: Spring Boot fornece suporte para segurança de aplicativos web, incluindo autenticação e autorização de usuários.
-
-Suporte para testes: Spring Boot fornece suporte para testes unitários e integração, incluindo a biblioteca de testes Spring Test.
-
 - **Vaadin**
 
 Vaadin é uma biblioteca de componentes web open-source para desenvolvimento de aplicativos Java. Ele permite aos desenvolvedores construir aplicativos web baseados em Java de forma rápida e fácil, sem precisar se preocupar com a camada de visualização. Em vez disso, os desenvolvedores podem se concentrar na lógica de negócios do aplicativo.
