@@ -84,14 +84,6 @@ Os itens marcados como obrigatórios são essenciais para iniciar o app em produ
 - twilio-clientId: Twilio Client ID (Opcional)
 - twilio-clientSecret: Twilio Client Secret (Opcional)
 
-É necessário informar a configuração do certificado ssl que se encontra na maquina de produção no arquivo *src/main/resources/application-prod.properties*
-
-O certificado deve estar no formato .P12
-
-Para converter certificados .PEM para .P12 utilize o comando abaixo, a senha definida na conversão devera ser informada no arquivo *src/main/resources/application-prod.properties*
-
-<*openssl pkcs12 -export -out Cert.p12 -in cert.pem -inkey key.pem*>
-
 **Ambiente Local**
 - Para executar o app localmente utilize o profile "dev" na compilação  <*mvn clean compile -P dev*>
 - Utilize o comando <*mvn spring-boot:run*> para executar
