@@ -27,7 +27,7 @@ class SecurityOAuthConfig(private val credentialsService: CredentialsService) {
             .clientSecret(cognito.getString(credentialsService.cognitoSecret))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .redirectUri("https://52.206.172.79/login/oauth2/code/cognito")
+            .redirectUri("https://44.212.134.110/login/oauth2/code/cognito")
             .scope("openid")
             .issuerUri("https://cognito-idp.us-east-1.amazonaws.com/us-east-1_lmHf6WPqk")
             .authorizationUri("https://jiren.auth.us-east-1.amazoncognito.com/oauth2/authorize")
