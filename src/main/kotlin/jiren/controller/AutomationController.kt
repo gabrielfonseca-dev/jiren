@@ -28,13 +28,19 @@ class AutomationController(
 
     private var specification = AutomationSpecification()
 
-    fun search(text: String,db: Database?,status: StatusAutomation?,inactive: Boolean): Page<Automation>? {
+    fun search(
+        text: String,
+        db: Database?,
+        status: StatusAutomation?,
+        inactive: Boolean,
+        page: Int = 0
+    ): Page<Automation> {
         if (db == null && status == null) {
             return automationRepository.findAll(
                 Specification.where(
                     specification.inactive(inactive)
                         .and(specification.name(text).or(specification.query(text)))
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         } else if (db != null && status != null) {
             return automationRepository.findAll(
@@ -42,7 +48,7 @@ class AutomationController(
                     specification.inactive(inactive)
                         .and(specification.name(text).or(specification.query(text)))
                         .and(specification.database(db).and(specification.status(status)))
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         } else if (db != null) {
             return automationRepository.findAll(
@@ -78,12 +84,12 @@ class AutomationController(
     }
 
     fun delete(automation: Automation) {
-        logController.saveLog(LogCode.AUTOMATION_INFO, LogType.DELETE, null, automation.toJson(), automation.name,null)
+        logController.saveLog(LogCode.AUTOMATION_INFO, LogType.DELETE, null, automation.toJson(), automation.name, null)
         return automationRepository.deleteById(automation.id)
     }
 
     fun save(automation: Automation): Automation {
-        logController.saveLog(LogCode.AUTOMATION_INFO, LogType.UPDATE, null, automation.toJson(), automation.name,null)
+        logController.saveLog(LogCode.AUTOMATION_INFO, LogType.UPDATE, null, automation.toJson(), automation.name, null)
         automationRepository.save(automation)
         return automation
     }
@@ -93,11 +99,22 @@ class AutomationController(
             SGBD.MongoDb -> {}
             else -> {
                 try {
-                    dataAccessObject.executeAutomation(automation.query!!, databasePicker.getConnection(automation.database!!) as Connection, automation.name!!)
+                    dataAccessObject.executeAutomation(
+                        automation.query!!,
+                        databasePicker.getConnection(automation.database!!) as Connection,
+                        automation.name!!
+                    )
                     automation.reschedule()
                     automationRepository.save(automation)
                 } catch (e: Exception) {
-                    logController.saveLog(LogCode.AUTOMATION_ERROR, LogType.EXECUTE, null, e.stackTraceToString(), automation.name,null)
+                    logController.saveLog(
+                        LogCode.AUTOMATION_ERROR,
+                        LogType.EXECUTE,
+                        null,
+                        e.stackTraceToString(),
+                        automation.name,
+                        null
+                    )
                     automation.reschedule()
                     automationRepository.save(automation)
                     throw (e)

@@ -23,7 +23,7 @@ class Script {
     @Column(nullable = false)
     var query: String? = null
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "database_id")
     @NotNull
     var database: Database? = null
@@ -38,6 +38,10 @@ class Script {
     @OneToOne
     var owner: User? = null
 
+    @NotNull
+    @ManyToMany(fetch = FetchType.EAGER)
+    var roles: MutableSet<Role>? = null
+
     fun toJson(): String {
         val json = JSONObject()
         json.put("id",id)
@@ -48,6 +52,7 @@ class Script {
         json.put("active",active)
         json.put("created",created)
         json.put("username",owner?.username)
+        json.put("roles", roles.toString())
         return json.toString()
     }
 

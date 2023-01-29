@@ -51,12 +51,12 @@ class MonitoringController(
 
     private var specification = MonitoringSpecification()
 
-    fun search(text: String, db: Database?, type: MonitoringType?, status: StatusMonitoring?, inactive: Boolean): Page<Monitoring>? {
+    fun search(text: String, db: Database?, type: MonitoringType?, status: StatusMonitoring?, inactive: Boolean, page: Int = 0): Page<Monitoring> {
         if (db == null && type == null && status == null) {
             return monitoringRepository.findAll(
                 Specification.where(
                     specification.inactive(inactive).and(specification.name(text).or(specification.command1(text)))
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         } else if (db != null && type != null && status != null) {
             return monitoringRepository.findAll(
@@ -66,7 +66,7 @@ class MonitoringController(
                             specification.type(type).and(specification.system(db))
                         )
                     )
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         } else if (db != null && type != null) {
             return monitoringRepository.findAll(

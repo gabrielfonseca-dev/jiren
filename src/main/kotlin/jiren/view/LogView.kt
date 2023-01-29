@@ -1,11 +1,15 @@
 package jiren.view
 
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.html.Anchor
+import com.vaadin.flow.component.html.Label
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.Scroller
@@ -13,10 +17,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.server.InputStreamFactory
+import com.vaadin.flow.server.StreamResource
 import com.vaadin.flow.spring.annotation.SpringComponent
 import com.vaadin.flow.spring.annotation.UIScope
 import jiren.controller.LogController
 import jiren.data.entity.Log
+import jiren.service.util.CSVParser
+import org.springframework.data.domain.Pageable
 import javax.annotation.PostConstruct
 
 @PageTitle("Logs")
@@ -29,6 +37,10 @@ class LogView(
     private val table = Grid(Log::class.java)
     private var modal = Dialog()
     private var log = Log()
+    val searchField = TextField()
+    private var list: MutableList<Log>? = null
+    private var page: Pageable? = null
+    private var totalPages: Int = 0
 
     @PostConstruct
     fun init() {
@@ -36,8 +48,40 @@ class LogView(
         this.justifyContentMode = FlexComponent.JustifyContentMode.CENTER
         this.defaultHorizontalComponentAlignment = FlexComponent.Alignment.CENTER
         this.style["text-align"] = "center"
-        this.add(createSearch(), createTable(), createModal())
+        this.add(createSearch(), createTable(), createPagination(), createModal())
         this.setSizeFull()
+    }
+
+    private fun createPagination(): HorizontalLayout {
+        val pageLabel = Label("${page?.pageNumber ?: ""}")
+
+        val btnBefore = Button("Anterior", Icon(VaadinIcon.ARROW_LEFT)) {
+            val pg = logController.search(searchField.value, (page?.pageNumber ?: 0) - 1)
+            page = pg.pageable
+            list = pg.toList()
+            totalPages = pg.totalPages
+            this.table.setItems(list)
+            UI.getCurrent().access {
+                pageLabel.text = "${page?.pageNumber.let { if(it != null) it + 1 else "" } }"
+            }
+            UI.getCurrent().push()
+        }
+        btnBefore.isIconAfterText = true
+
+        val btnNext = Button("Próximo", Icon(VaadinIcon.ARROW_RIGHT)) {
+            if ((page?.pageNumber ?: 0) < (totalPages - 1)) {
+                val pg = logController.search(searchField.value, (page?.pageNumber ?: 0) + 1)
+                totalPages = pg.totalPages
+                page = pg.pageable
+                list = pg.toList()
+                this.table.setItems(list)
+                UI.getCurrent().access {
+                    pageLabel.text = "${page?.pageNumber.let { if(it != null) it + 1 else "" } }"
+                }
+                UI.getCurrent().push()
+            }
+        }
+        return HorizontalLayout(btnBefore, pageLabel, btnNext)
     }
 
     private fun createTable(): Scroller {
@@ -67,14 +111,20 @@ class LogView(
     }
 
     private fun createSearch(): HorizontalLayout {
-        val searchField = TextField()
         val searchButton = Button("Buscar", Icon("search"))
+        val download = Anchor(StreamResource("export.csv", InputStreamFactory { CSVParser().parse(list).inputStream() }), "")
+        download.element.setAttribute("Exportar", true)
+        download.add(Button(Icon(VaadinIcon.DOWNLOAD_ALT)))
         val searchPanel = HorizontalLayout()
-        searchPanel.add(searchField, searchButton)
+        searchPanel.add(searchField, searchButton, download)
         searchPanel.justifyContentMode = FlexComponent.JustifyContentMode.CENTER
         searchPanel.defaultVerticalComponentAlignment = FlexComponent.Alignment.BASELINE
         searchButton.addClickListener {
-            this.table.setItems(logController.search(searchField.value)?.toList())
+            val pg = logController.search(searchField.value)
+            totalPages = pg.totalPages
+            page = pg.pageable
+            list = pg.toList()
+            this.table.setItems(list)
         }
         return searchPanel
     }
@@ -127,4 +177,3 @@ class LogView(
     }
 
 }
-

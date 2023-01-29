@@ -34,8 +34,8 @@ class LogController(private var logRepository: LogRepository, private var userRe
         }
     }
 
-    fun search(text: String): Page<Log>? {
-        return logRepository.findAll(Specification.where(specification.script(text).or(specification.task(text)).or(specification.value(text))), Pageable.ofSize(50))
+    fun search(text: String, page: Int = 0): Page<Log> {
+        return logRepository.findAll(Specification.where(specification.script(text).or(specification.task(text)).or(specification.value(text))), Pageable.ofSize(50).withPage(if(page < 0) 0 else page))
     }
 
     fun saveLog(code: LogCode, type: LogType, elapsedTime: Long?, value: String, task: String? = null, script: String? = null) {

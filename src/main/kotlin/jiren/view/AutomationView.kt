@@ -1,5 +1,6 @@
 package jiren.view
 
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
@@ -9,8 +10,11 @@ import com.vaadin.flow.component.datetimepicker.DateTimePicker
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.html.Anchor
 import com.vaadin.flow.component.html.H3
+import com.vaadin.flow.component.html.Label
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -23,6 +27,8 @@ import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.validator.BeanValidator
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.server.InputStreamFactory
+import com.vaadin.flow.server.StreamResource
 import com.vaadin.flow.spring.annotation.SpringComponent
 import com.vaadin.flow.spring.annotation.UIScope
 import jiren.controller.AutomationController
@@ -32,6 +38,8 @@ import jiren.data.entity.Automation
 import jiren.data.enum.Privileges
 import jiren.data.enum.SGBD
 import jiren.data.enum.StatusAutomation
+import jiren.service.util.CSVParser
+import org.springframework.data.domain.Pageable
 import java.util.*
 import javax.annotation.PostConstruct
 
@@ -51,6 +59,13 @@ class AutomationView(
     private var modal = Dialog()
     private var binder = Binder(Automation::class.java)
     private var automation = Automation()
+    private val searchField = TextField()
+    private val inactiveFilter = Checkbox("Inativo")
+    private val statusBox = ComboBox("Status", EnumSet.allOf(StatusAutomation::class.java))
+    private val sysBox = ComboBox("Banco de Dados", databaseOptions)
+    private var list: MutableList<Automation>? = null
+    private var page: Pageable? = null
+    private var totalPages: Int = 0
 
     @PostConstruct
     fun init() {
@@ -58,8 +73,52 @@ class AutomationView(
         this.justifyContentMode = FlexComponent.JustifyContentMode.CENTER
         this.defaultHorizontalComponentAlignment = FlexComponent.Alignment.CENTER
         this.style["text-align"] = "center"
-        this.add(createSearch(), createMenu(), createTable(), createModal())
+        this.add(createSearch(), createMenu(), createTable(), createPagination(), createModal())
         this.setSizeFull()
+    }
+
+    private fun createPagination(): HorizontalLayout {
+        val pageLabel = Label("${page?.pageNumber?: ""}")
+
+        val btnBefore = Button("Anterior", Icon(VaadinIcon.ARROW_LEFT)) {
+            val pg = automationController.search(
+                searchField.value,
+                sysBox.value,
+                statusBox.value,
+                inactiveFilter.value,
+                (page?.pageNumber?: 1) - 1
+            )
+            page = pg.pageable
+            list = pg.toList()
+            totalPages = pg.totalPages
+            this.table.setItems(list)
+            UI.getCurrent().access {
+                pageLabel.text = "${page?.pageNumber.let { if(it != null) it + 1 else "" } }"
+            }
+            UI.getCurrent().push()
+        }
+        btnBefore.isIconAfterText = true
+
+        val btnNext = Button("Próximo", Icon(VaadinIcon.ARROW_RIGHT)) {
+            if( (page?.pageNumber?: 0) < (totalPages - 1) ) {
+                val pg = automationController.search(
+                    searchField.value,
+                    sysBox.value,
+                    statusBox.value,
+                    inactiveFilter.value,
+                    (page?.pageNumber?: 1) + 1
+                )
+                totalPages = pg.totalPages
+                page = pg.pageable
+                list = pg.toList()
+                this.table.setItems(list)
+                UI.getCurrent().access {
+                    pageLabel.text = "${page?.pageNumber.let { if(it != null) it + 1 else "" } }"
+                }
+                UI.getCurrent().push()
+            }
+        }
+        return HorizontalLayout(btnBefore, pageLabel, btnNext)
     }
 
     private fun createTable(): Scroller {
@@ -104,19 +163,16 @@ class AutomationView(
     }
 
     private fun createSearch(): VerticalLayout {
-        val searchField = TextField()
         searchField.placeholder = "Digite para buscar"
         val btnSearch = Button("Buscar", Icon("search"))
-        val inactiveFilter = Checkbox("Inativo")
+        val download = Anchor(StreamResource("export.csv", InputStreamFactory { CSVParser().parse(list).inputStream() }), "")
+        download.element.setAttribute("Exportar", true)
+        download.add(Button(Icon(VaadinIcon.DOWNLOAD_ALT)))
         val btnGroup = HorizontalLayout()
-        btnGroup.add(searchField, btnSearch, inactiveFilter)
+        btnGroup.add(searchField, btnSearch, download, inactiveFilter)
         btnGroup.defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         btnGroup.justifyContentMode = FlexComponent.JustifyContentMode.CENTER
         btnGroup.setWidthFull()
-
-
-        val statusBox = ComboBox("Status", EnumSet.allOf(StatusAutomation::class.java))
-        val sysBox = ComboBox("Banco de Dados", databaseOptions)
         val boxGroup = FormLayout()
         boxGroup.add(statusBox, sysBox)
         boxGroup.setWidthFull()
@@ -133,14 +189,16 @@ class AutomationView(
         searchPanel.isSpacing = false
 
         btnSearch.addClickListener {
-            table.setItems(
-                automationController.search(
-                    searchField.value,
-                    sysBox.value,
-                    statusBox.value,
-                    inactiveFilter.value
-                )?.toList()
+            val pg = automationController.search(
+                searchField.value,
+                sysBox.value,
+                statusBox.value,
+                inactiveFilter.value
             )
+            totalPages = pg.totalPages
+            page = pg.pageable
+            list = pg.toList()
+            this.table.setItems(list)
         }
         return searchPanel
     }

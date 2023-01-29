@@ -1,6 +1,7 @@
 package jiren.controller
 
 import jiren.data.entity.Database
+import jiren.data.entity.Role
 import jiren.data.entity.Script
 import jiren.data.enum.LogCode
 import jiren.data.enum.LogType
@@ -21,20 +22,20 @@ class ScriptController(
 
     private var specification = ScriptSpecification()
 
-    fun search(text: String, db: Database?, inactive: Boolean): Page<Script>? {
+    fun search(text: String, db: Database?, inactive: Boolean, page: Int = 0): Page<Script> {
         return if (db == null) {
             scriptRepository.findAll(
                 Specification.where(
                     specification.inactive(inactive)
                         .and(specification.name(text).or(specification.query(text)))
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         }  else {
             scriptRepository.findAll(
                 Specification.where(
                     specification.inactive(inactive)
                         .and(specification.name(text).or(specification.query(text))).and(specification.database(db))
-                ), Pageable.ofSize(50)
+                ), Pageable.ofSize(50).withPage(if(page < 0) 0 else page)
             )
         }
     }
@@ -43,8 +44,8 @@ class ScriptController(
         scriptRepository.saveAll(scripts)
     }
 
-    fun options(): List<Script> {
-        return scriptRepository.findByScriptActiveTrue()
+    fun optionsByRole(role: Role?): List<Script> {
+        return scriptRepository.findByScriptActiveTrue(role?.name ?: "")
     }
 
     fun findByName(name: String): Script? {

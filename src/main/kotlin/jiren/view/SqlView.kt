@@ -18,17 +18,18 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.spring.annotation.SpringComponent
 import com.vaadin.flow.spring.annotation.UIScope
 import jiren.controller.ScriptController
+import jiren.controller.UserController
+import jiren.security.SecurityService
 import jiren.service.database.ScriptExecutor
 
 @PageTitle("SQL")
 @Route(value = "ti/sql", layout = MainLayout::class)
 @SpringComponent
 @UIScope
-class SqlView(private val scriptExecutor: ScriptExecutor, scriptController: ScriptController) : VerticalLayout() {
+class SqlView(private val scriptExecutor: ScriptExecutor, private val userController: UserController, private val scriptController: ScriptController) : VerticalLayout() {
 
     private val scriptArea = TextArea()
     private val outputArea = TextArea()
-    private val databasesOptions = scriptController.options()
     private val notificationPosition = Notification.Position.TOP_END
     private var modal = Dialog()
 
@@ -48,11 +49,12 @@ class SqlView(private val scriptExecutor: ScriptExecutor, scriptController: Scri
         val taskField = TextField("Task", "ST-00000")
 
         val varBtn = Button("Definir Variáveis", Icon("notebook"))
-        varBtn.addClickListener {
-            this.modal.open()
-        }
+        varBtn.addClickListener { this.modal.open() }
 
-        val scriptOptions = ComboBox("Script", databasesOptions)
+        val role = userController.findByUsername(SecurityService().authenticatedUser ?: "")?.role
+        val scripts = scriptController.optionsByRole(role)
+
+        val scriptOptions = ComboBox("Script", scripts)
         scriptOptions.addValueChangeListener {
             this.scriptArea.value = scriptOptions.value.query
             createModal()

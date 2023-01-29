@@ -1,5 +1,6 @@
 package jiren.view
 
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
@@ -9,8 +10,11 @@ import com.vaadin.flow.component.datetimepicker.DateTimePicker
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.html.Anchor
 import com.vaadin.flow.component.html.H3
+import com.vaadin.flow.component.html.Label
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -23,16 +27,21 @@ import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.validator.BeanValidator
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.server.InputStreamFactory
+import com.vaadin.flow.server.StreamResource
 import com.vaadin.flow.spring.annotation.SpringComponent
 import com.vaadin.flow.spring.annotation.UIScope
 import jiren.controller.DatabaseController
 import jiren.controller.MonitoringController
 import jiren.controller.UserController
 import jiren.data.entity.Monitoring
+import jiren.data.entity.Script
 import jiren.data.enum.MonitoringType
 import jiren.data.enum.Privileges
 import jiren.data.enum.StatusMonitoring
+import jiren.service.util.CSVParser
 import org.springframework.core.io.ClassPathResource
+import org.springframework.data.domain.Pageable
 import java.io.InputStreamReader
 import java.util.*
 import javax.annotation.PostConstruct
@@ -53,14 +62,65 @@ class MonitoringView(
     private val notificationPosition = Notification.Position.TOP_END
     private var binder = Binder(Monitoring::class.java)
     private var monitoring = Monitoring()
+    private val searchField = TextField()
+    private val btnSearch = Button("Buscar", Icon("search"))
+    private val inactiveFilter = Checkbox("Inativo")
+    private val statusBox = ComboBox("Status", EnumSet.allOf(StatusMonitoring::class.java))
+    private val sysBox = ComboBox("Banco de Dados", databaseOptions)
+    private val typeBox = ComboBox("Tipo", EnumSet.allOf(MonitoringType::class.java))
+    private var list: MutableList<Monitoring>? = null
+    private var page: Pageable? = null
+    private var totalPages: Int = 0
 
     @PostConstruct
     private fun init() {
-        this.add(createSearch(), createMenu(), createTable(), createModal())
+        this.add(createSearch(), createMenu(), createTable(), createPagination(), createModal())
         this.setSizeFull()
         this.justifyContentMode = FlexComponent.JustifyContentMode.CENTER
         this.defaultHorizontalComponentAlignment = FlexComponent.Alignment.CENTER
         this.style["text-align"] = "center"
+    }
+
+    private fun createPagination(): HorizontalLayout {
+        val pageLabel = Label("${page?.pageNumber ?: ""}")
+
+        val btnBefore = Button("Anterior", Icon(VaadinIcon.ARROW_LEFT)) {
+            val pg = this.monitoringController.search(
+                searchField.value,
+                sysBox.value,
+                typeBox.value,
+                statusBox.value,
+                inactiveFilter.value,
+                (page?.pageNumber ?: 1) - 1
+            )
+            page = pg.pageable
+            list = pg.toList()
+            totalPages = pg.totalPages
+            this.table.setItems(list)
+            UI.getCurrent().access { pageLabel.text = "${page?.pageNumber.let { if (it != null) it + 1 else "" }}" }
+            UI.getCurrent().push()
+        }
+        btnBefore.isIconAfterText = true
+
+        val btnNext = Button("Próximo", Icon(VaadinIcon.ARROW_RIGHT)) {
+            if ((page?.pageNumber ?: 0) < (totalPages - 1)) {
+                val pg = this.monitoringController.search(
+                    searchField.value,
+                    sysBox.value,
+                    typeBox.value,
+                    statusBox.value,
+                    inactiveFilter.value,
+                    (page?.pageNumber ?: 1) + 1
+                )
+                totalPages = pg.totalPages
+                page = pg.pageable
+                list = pg.toList()
+                this.table.setItems(list)
+                UI.getCurrent().access { pageLabel.text = "${page?.pageNumber.let { if (it != null) it + 1 else "" }}" }
+                UI.getCurrent().push()
+            }
+        }
+        return HorizontalLayout(btnBefore, pageLabel, btnNext)
     }
 
     private fun createTable(): Scroller {
@@ -119,18 +179,15 @@ class MonitoringView(
     }
 
     private fun createSearch(): VerticalLayout {
-        val searchField = TextField()
         searchField.placeholder = "Digite para buscar"
-        val btnSearch = Button("Buscar", Icon("search"))
-        val inactiveFilter = Checkbox("Inativo")
+        val download =
+            Anchor(StreamResource("export.csv", InputStreamFactory { CSVParser().parse(list).inputStream() }), "")
+        download.element.setAttribute("Exportar", true)
+        download.add(Button(Icon(VaadinIcon.DOWNLOAD_ALT)))
         val btnGroup = FormLayout()
-        val optionsGroup = HorizontalLayout(btnSearch, HorizontalLayout(inactiveFilter))
+        val optionsGroup = HorizontalLayout(btnSearch, HorizontalLayout(download, inactiveFilter))
         optionsGroup.defaultVerticalComponentAlignment = FlexComponent.Alignment.CENTER
         btnGroup.add(searchField, optionsGroup)
-
-        val statusBox = ComboBox("Status", EnumSet.allOf(StatusMonitoring::class.java))
-        val sysBox = ComboBox("Banco de Dados", databaseOptions)
-        val typeBox = ComboBox("Tipo", EnumSet.allOf(MonitoringType::class.java))
         val boxGroup = FormLayout()
         boxGroup.setResponsiveSteps(
             FormLayout.ResponsiveStep("0px", 3), FormLayout.ResponsiveStep("600px", 3)
@@ -144,11 +201,13 @@ class MonitoringView(
         searchPanel.isSpacing = false
 
         btnSearch.addClickListener {
-            this.table.setItems(
-                this.monitoringController.search(
-                    searchField.value, sysBox.value, typeBox.value, statusBox.value, inactiveFilter.value
-                )?.toList()
+            val pg = this.monitoringController.search(
+                searchField.value, sysBox.value, typeBox.value, statusBox.value, inactiveFilter.value
             )
+            totalPages = pg.totalPages
+            page = pg.pageable
+            list = pg.toList()
+            this.table.setItems(list)
         }
         return searchPanel
     }
@@ -235,7 +294,8 @@ class MonitoringView(
 
         val scheduleConfigField = IntegerField("Intervalo em Minutos")
         scheduleConfigField.isRequiredIndicatorVisible = true
-        this.binder.forField(scheduleConfigField).withValidator(BeanValidator(Monitoring::class.java, "executionInterval"))
+        this.binder.forField(scheduleConfigField)
+            .withValidator(BeanValidator(Monitoring::class.java, "executionInterval"))
             .bind(Monitoring::executionInterval, Monitoring::executionInterval.setter).validate(true)
         this.form.add(scheduleConfigField)
 
@@ -260,7 +320,8 @@ class MonitoringView(
 
         val jiraNotificationField = Checkbox("Jira", false)
         jiraNotificationField.value = true
-        this.binder.forField(jiraNotificationField).withValidator(BeanValidator(Monitoring::class.java, "jiraNotification"))
+        this.binder.forField(jiraNotificationField)
+            .withValidator(BeanValidator(Monitoring::class.java, "jiraNotification"))
             .bind(Monitoring::jiraNotification, Monitoring::jiraNotification.setter).validate(true)
 
         val activeField = Checkbox("Ativo", false)
@@ -268,11 +329,7 @@ class MonitoringView(
             .bind(Monitoring::enabled, Monitoring::enabled.setter).validate(true)
 
         val checkBoxGroup = FormLayout(
-            showInPanelField,
-            sendMailField,
-            rocketChatField,
-            jiraNotificationField,
-            activeField
+            showInPanelField, sendMailField, rocketChatField, jiraNotificationField, activeField
         )
         checkBoxGroup.setResponsiveSteps(
             FormLayout.ResponsiveStep("0px", 2), FormLayout.ResponsiveStep("600px", 4)
@@ -328,8 +385,10 @@ class MonitoringView(
             if (isSQL) {
                 sqlSystemField.isVisible = true
                 cmdField.isVisible = true
-                this.binder.forField(sqlSystemField).asRequired("Campo obrigatório").bind(Monitoring::databaseOne, Monitoring::databaseOne.setter)
-                this.binder.forField(cmdField).asRequired("Campo obrigatório").bind(Monitoring::queryOne, Monitoring::queryOne.setter)
+                this.binder.forField(sqlSystemField).asRequired("Campo obrigatório")
+                    .bind(Monitoring::databaseOne, Monitoring::databaseOne.setter)
+                this.binder.forField(cmdField).asRequired("Campo obrigatório")
+                    .bind(Monitoring::queryOne, Monitoring::queryOne.setter)
                 cmdField.isRequiredIndicatorVisible = false
             } else if (!isComparison) {
                 sqlSystemField.isVisible = false
@@ -348,8 +407,7 @@ class MonitoringView(
                 httpConfig.isRequiredIndicatorVisible = false
             } else {
                 httpConfig.isVisible = false
-                this.binder.forField(httpConfig)
-                    .bind(Monitoring::httpConfig, Monitoring::httpConfig.setter)
+                this.binder.forField(httpConfig).bind(Monitoring::httpConfig, Monitoring::httpConfig.setter)
                 httpConfig.isRequiredIndicatorVisible = true
             }
 
@@ -362,8 +420,7 @@ class MonitoringView(
                 satConfig.isRequiredIndicatorVisible = false
             } else {
                 satConfig.isVisible = false
-                this.binder.forField(satConfig)
-                    .bind(Monitoring::satConfig, Monitoring::satConfig.setter)
+                this.binder.forField(satConfig).bind(Monitoring::satConfig, Monitoring::satConfig.setter)
                 satConfig.isRequiredIndicatorVisible = true
             }
 
@@ -376,8 +433,7 @@ class MonitoringView(
                 sqsConfig.isRequiredIndicatorVisible = false
             } else {
                 sqsConfig.isVisible = false
-                this.binder.forField(sqsConfig)
-                    .bind(Monitoring::sqsConfig, Monitoring::sqsConfig.setter)
+                this.binder.forField(sqsConfig).bind(Monitoring::sqsConfig, Monitoring::sqsConfig.setter)
                 sqsConfig.isRequiredIndicatorVisible = true
             }
 
@@ -390,18 +446,21 @@ class MonitoringView(
                 cwConfig.isRequiredIndicatorVisible = false
             } else {
                 cwConfig.isVisible = false
-                this.binder.forField(cwConfig)
-                    .bind(Monitoring::cwConfig, Monitoring::cwConfig.setter)
+                this.binder.forField(cwConfig).bind(Monitoring::cwConfig, Monitoring::cwConfig.setter)
                 cwConfig.isRequiredIndicatorVisible = true
             }
 
-            val httpTemplate = InputStreamReader(ClassPathResource("META-INF/resources/templates/http-template.json").inputStream).readText()
+            val httpTemplate =
+                InputStreamReader(ClassPathResource("META-INF/resources/templates/http-template.json").inputStream).readText()
             httpConfig.value = httpTemplate
-            val satTemplate = InputStreamReader(ClassPathResource("META-INF/resources/templates/sat-template.json").inputStream).readText()
+            val satTemplate =
+                InputStreamReader(ClassPathResource("META-INF/resources/templates/sat-template.json").inputStream).readText()
             satConfig.value = satTemplate
-            val sqsTemplate = InputStreamReader(ClassPathResource("META-INF/resources/templates/sqs-template.json").inputStream).readText()
+            val sqsTemplate =
+                InputStreamReader(ClassPathResource("META-INF/resources/templates/sqs-template.json").inputStream).readText()
             sqsConfig.value = sqsTemplate
-            val cwTemplate = InputStreamReader(ClassPathResource("META-INF/resources/templates/cw-template.json").inputStream).readText()
+            val cwTemplate =
+                InputStreamReader(ClassPathResource("META-INF/resources/templates/cw-template.json").inputStream).readText()
             cwConfig.value = cwTemplate
 
         }
