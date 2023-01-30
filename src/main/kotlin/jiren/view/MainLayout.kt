@@ -10,6 +10,7 @@ import com.vaadin.flow.component.dependency.CssImport
 import com.vaadin.flow.component.dependency.JsModule
 import com.vaadin.flow.component.html.*
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -88,18 +89,18 @@ class MainLayout(val userController: UserController, val messageController: Mess
 
     private fun createTopMenuBar() {
 
-        val logoutBtn = Button("Sair", Icon("exit"))
+        val logoutBtn = Button("Sair", Icon(VaadinIcon.EXIT))
         logoutBtn.isVisible = Security.isUserLoggedIn
         logoutBtn.isIconAfterText = true
         logoutBtn.addClickListener { SecurityService().logout() }
 
-        val loginBtn = Button("Entrar", Icon("sign-in")) { UI.getCurrent().page.open("/oauth2/authorization/cognito", "_self") }
+        val loginBtn = Button("Entrar", Icon(VaadinIcon.SIGN_IN)) { UI.getCurrent().page.open("/oauth2/authorization/cognito", "_self") }
         loginBtn.isVisible = !Security.isUserLoggedIn
 
-        val homeBtn = Button("Início", Icon("home")) { UI.getCurrent().page.open("/home", "_self") }
+        val homeBtn = Button("Início", Icon(VaadinIcon.HOME)) { UI.getCurrent().page.open("/home", "_self") }
         homeBtn.isIconAfterText = true
 
-        val colorBtn = Button("", Icon("adjust")) {
+        val colorBtn = Button("", Icon(VaadinIcon.ADJUST)) {
             val themeList = UI.getCurrent().element.themeList
             if (themeList.contains(Material.DARK)) {
                 themeList.remove(Material.DARK)

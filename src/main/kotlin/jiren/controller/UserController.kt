@@ -105,14 +105,9 @@ class UserController(
         } else {
             val availableUsers: MutableList<User> = ArrayList()
             availableUsers.addAll(connectedUsers)
-            availableUsers.removeIf { cUser ->
-                getOpenInstances(cUser).isNotEmpty()
-            }
+            availableUsers.removeIf { cUser -> getOpenInstances(cUser).isNotEmpty() }
             return if(availableUsers.isEmpty()) {
-                user = connectedUsers[0]
-                assigneeInstance(instance, user)
-                "whatsapp:+55${user.phone?.replace("-","")?.replace("(","")?.replace(")","")}"
-                user.phone
+                null
             } else {
                 user = availableUsers[0]
                 assigneeInstance(instance, user)
@@ -123,6 +118,7 @@ class UserController(
 
     fun assigneeInstance(instance: Instance, user: User) {
         instance.user = user
+        instance.chatAwaitEnd = Timestamp.from(now())
         instanceController.instanceRepository.save(instance)
     }
 

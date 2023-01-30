@@ -1,7 +1,7 @@
 package jiren.data.entity.twilio
 
+import jiren.data.entity.User
 import jiren.data.enum.MessageTypes
-import org.joda.time.DateTime
 import java.sql.Timestamp
 import java.time.Instant.now
 import javax.persistence.*
@@ -22,6 +22,8 @@ class Message {
     var toNumber: String? = null
     @Column(nullable = false)
     var body: String? = null
+    @ManyToOne
+    var user: User? = null
     var code: String? = null
     var answered: Boolean = false
     var messageSid: String? = null
@@ -44,14 +46,15 @@ class Message {
     var forwarded: String? = null
     var createdAt: Timestamp? = Timestamp.from(now())
 
-    fun outcoming(code: String, instance: Instance, from: String, to: String, body: String): Message {
+    fun outbound(code: String, instance: Instance, from: String, to: String, body: String, user: User? = null): Message {
         this.code = code
         this.instance = instance
         this.fromNumber = from
         this.toNumber = to
         this.body = body
-        this.type = MessageTypes.OUTCOMING
+        this.type = MessageTypes.OUTBOUND
         this.createdAt = Timestamp.from(now())
+        this.user = user
         return this
     }
 

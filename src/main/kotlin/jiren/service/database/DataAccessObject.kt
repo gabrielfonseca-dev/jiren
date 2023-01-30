@@ -187,7 +187,6 @@ class DataAccessObject(private val logController: LogController, private val par
                 backupQueryBuilder.append("WHERE $where")
 
                 val backupQuery = backupQueryBuilder.toString().replace(", FROM", " FROM")
-                println(backupQuery)
 
                 val transact = connection.prepareStatement(backupQuery)
                 transact.queryTimeout = 300

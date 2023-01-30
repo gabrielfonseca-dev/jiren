@@ -6,6 +6,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -23,7 +24,7 @@ import jiren.security.SecurityService
 import jiren.service.database.ScriptExecutor
 
 @PageTitle("SQL")
-@Route(value = "ti/sql", layout = MainLayout::class)
+@Route(value = "sql", layout = MainLayout::class)
 @SpringComponent
 @UIScope
 class SqlView(private val scriptExecutor: ScriptExecutor, private val userController: UserController, private val scriptController: ScriptController) : VerticalLayout() {
@@ -48,7 +49,7 @@ class SqlView(private val scriptExecutor: ScriptExecutor, private val userContro
 
         val taskField = TextField("Task", "ST-00000")
 
-        val varBtn = Button("Definir Variáveis", Icon("notebook"))
+        val varBtn = Button("Variáveis", Icon(VaadinIcon.CURLY_BRACKETS))
         varBtn.addClickListener { this.modal.open() }
 
         val role = userController.findByUsername(SecurityService().authenticatedUser ?: "")?.role
@@ -62,7 +63,7 @@ class SqlView(private val scriptExecutor: ScriptExecutor, private val userContro
         }
 
         val confirmDialog =  ConfirmDialog()
-        val execBtn = Button("Executar", Icon("play"))
+        val execBtn = Button("Executar", Icon(VaadinIcon.PLAY))
 
         confirmDialog.setText("Confirma a execução do script ?")
         confirmDialog.isCloseOnEsc = true

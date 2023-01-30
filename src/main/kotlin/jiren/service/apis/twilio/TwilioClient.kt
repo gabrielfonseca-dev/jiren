@@ -10,12 +10,15 @@ import jiren.controller.twilio.TicketController
 import jiren.data.entity.twilio.DefaultMessages
 import jiren.data.entity.twilio.Instance
 import jiren.data.entity.twilio.Ticket
+import jiren.security.SecurityService
 import jiren.security.credentials.CredentialsService
 import jiren.service.apis.jira.JiraClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.sql.Timestamp
+import java.time.Instant
 import com.twilio.rest.api.v2010.account.Message as TwilioMessage
 
 @RestController
@@ -59,7 +62,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ASK_FOR_TICKET_OWNER, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_TICKET_TITLE,
                             instance,
                             from = form.to!!,
@@ -78,7 +81,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ASK_TICKET_TITLE, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_TICKET_DESCRIPTION,
                             instance,
                             from = form.to!!,
@@ -97,7 +100,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ASK_TICKET_DESCRIPTION, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_ATTACHMENTS,
                             instance,
                             from = form.to!!,
@@ -118,7 +121,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ASK_FOR_TICKET_ATTACHMENTS, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_CONFIRMATION,
                             instance,
                             from = form.to!!,
@@ -180,7 +183,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ASK_FOR_TICKET_NUMBER_TO_ANSWER, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_COMMENT,
                             instance,
                             from = form.to!!,
@@ -220,7 +223,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_NEW_TICKET, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_OWNER,
                             instance,
                             from = form.to!!,
@@ -235,7 +238,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_MY_TICKETS, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_OWNER_TO_CONSULT,
                             instance,
                             from = form.to!!,
@@ -250,7 +253,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_TICKET_DETAILS, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_NUMBER,
                             instance,
                             from = form.to!!,
@@ -265,7 +268,7 @@ class TwilioClient {
                         form.convert().incoming(defaultMessages.CODE_ANSWER_TICKET, instance, true)
                     )
                     messageController.save(
-                        jiren.data.entity.twilio.Message().outcoming(
+                        jiren.data.entity.twilio.Message().outbound(
                             defaultMessages.CODE_ASK_FOR_TICKET_NUMBER_TO_ANSWER,
                             instance,
                             from = form.to!!,
@@ -282,24 +285,16 @@ class TwilioClient {
                     val split = operatorPhone?.split("::")
                     if (!split.isNullOrEmpty()) operatorPhone = split[0]
                         if (operatorPhone != null) {
-                            messageController.save(jiren.data.entity.twilio.Message().outcoming(defaultMessages.CODE_LIVE_CHAT,instance,from = form.to!!,to = form.from!!,defaultMessages.ASK_TO_WAIT_FOR_CONTACT))
+                            messageController.save(jiren.data.entity.twilio.Message().outbound(defaultMessages.CODE_LIVE_CHAT,instance,from = form.to!!,to = form.from!!,defaultMessages.ASK_TO_WAIT_FOR_CONTACT))
                             if (split != null && split.contains("SHIFT")) {
                                 sendMessage(instance.contact!!, operatorPhone,"Ola, por favor entre em contato com ${instance.contactName} atraves do numero ${instance.contact}")
                             }
                             Message.Builder(defaultMessages.ASK_TO_WAIT_FOR_CONTACT).build()
                         } else {
-                            messageController.save(
-                                jiren.data.entity.twilio.Message().outcoming(
-                                    defaultMessages.CODE_NO_AVAILABLE_OPERATOR,
-                                    instance,
-                                    from = form.to!!,
-                                    to = form.from!!,
-                                    defaultMessages.NO_AVAILABLE_OPERATOR
-                                )
-                            )
-                            instance.isOpen = false
+                            messageController.save(jiren.data.entity.twilio.Message().outbound(defaultMessages.CODE_LIVE_CHAT,instance,from = form.to!!,to = form.from!!,defaultMessages.ASK_TO_WAIT_FOR_CONTACT))
+                            instance.chatAwaitStart = Timestamp.from(Instant.now())
                             instanceController.instanceRepository.save(instance)
-                            Message.Builder(defaultMessages.NO_AVAILABLE_OPERATOR).build()
+                            Message.Builder(defaultMessages.ASK_TO_WAIT_FOR_CONTACT).build()
                         }
                     } else {
                         null
@@ -329,7 +324,8 @@ class TwilioClient {
 
     fun sendMessage(instance: Instance, msg: String): jiren.data.entity.twilio.Message {
         val message = jiren.data.entity.twilio.Message()
-        message.outcoming("LIVE_CHAT", instance, instance.twilioNumber!!, instance.contact!!, msg)
+        val user = messageController.userController.findByUsername(SecurityService().authenticatedUser ?: "")
+        message.outbound("LIVE_CHAT", instance, instance.twilioNumber!!, instance.contact!!, msg, user)
         messageController.save(message)
 
         Twilio.init(
@@ -359,4 +355,4 @@ class TwilioClient {
             .create()
     }
 
-}
+} // TODO Assign existing open instances

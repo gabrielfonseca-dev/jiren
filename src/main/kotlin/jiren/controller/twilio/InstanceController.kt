@@ -23,6 +23,14 @@ class InstanceController(val instanceRepository: InstanceRepository, val ticketR
         }
     }
 
+    fun getPendingChats(): List<Instance> {
+        return instanceRepository.findOpenInstanceForChat()
+    }
+
+    fun getAllOpen(): List<Instance> {
+        return instanceRepository.findAllOpen()
+    }
+
     fun getTicket(instance: Instance): Ticket? {
         val ticket = ticketRepository.findByInstance(instance)
         return if (ticket.isPresent) ticket.get()

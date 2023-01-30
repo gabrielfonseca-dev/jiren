@@ -22,9 +22,26 @@ class Instance {
 
     @Column(nullable = false)
     var isOpen: Boolean = true
+        set(isOpen) {
+            field = isOpen
+            if(!isOpen) closedAt = Timestamp.from(now())
+        }
+
+    var hadTransfer: Boolean = false
 
     @Column(nullable = false)
     var createdAt: Timestamp = Timestamp.from(now())
+
+    private var closedAt: Timestamp? = null
+
+    var chatAwaitStart: Timestamp? = null
+
+    var chatAwaitEnd: Timestamp? = null
+
+    @ManyToOne
+    var evaluationModel: EvaluationModel? = null
+
+    var evaluated: Boolean = false
 
     @ManyToOne
     @JoinColumn(name = "user_id")

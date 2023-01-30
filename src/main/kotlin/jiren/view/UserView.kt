@@ -10,6 +10,7 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -94,13 +95,13 @@ class UserView(
     }
 
     private fun createMenu(): HorizontalLayout {
-        val newUser = Button("Novo", Icon("plus"))
+        val newUser = Button("Novo", Icon(VaadinIcon.PLUS))
         newUser.addClickListener {
             user = User()
             userBinder.readBean(user)
             userModal.open()
         }
-        val permissionsBtn = Button("Permissões", Icon("notebook"))
+        val permissionsBtn = Button("Permissões", Icon(VaadinIcon.CURLY_BRACKETS))
         permissionsBtn.addClickListener {
             roleModal.open()
         }

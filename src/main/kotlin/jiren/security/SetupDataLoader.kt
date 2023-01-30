@@ -31,14 +31,15 @@ class SetupDataLoader(
         if (alreadySetup) return
 
         val views = listOf(
-            SqlView::class.java.simpleName,
-            ScriptView::class.java.simpleName,
             AutomationView::class.java.simpleName,
-            MonitoringView::class.java.simpleName,
-            ShiftView::class.java.simpleName,
-            UserView::class.java.simpleName,
             ConfigurationView::class.java.simpleName,
-            LogView::class.java.simpleName
+            LiveChatView::class.java.simpleName,
+            LogView::class.java.simpleName,
+            MonitoringView::class.java.simpleName,
+            ScriptView::class.java.simpleName,
+            ShiftView::class.java.simpleName,
+            SqlView::class.java.simpleName,
+            UserView::class.java.simpleName
         )
 
         val writePrivilege: Permission = createPrivilegeIfNotFound("WRITE")
@@ -141,6 +142,7 @@ class SetupDataLoader(
             "ConfigurationView" -> "cogs"
             "LogView" -> "file-text"
             "ScriptView" -> "file"
+            "LiveChatView" -> "chat"
             else -> ""
         }
     }

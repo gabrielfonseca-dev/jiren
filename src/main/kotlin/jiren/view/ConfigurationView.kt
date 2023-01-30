@@ -6,6 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -36,8 +37,9 @@ class ConfigurationView(
     private val databaseController: DatabaseController
 ) : VerticalLayout() {
 
-    private val parameterView = Tab(Icon("notebook"), Span("Parametros"))
-    private val databaseView = Tab(Icon("database"), Span("Bancos de dados"))
+    private val parameterView = Tab(Icon(VaadinIcon.OPTIONS), Span("Parametros"))
+    private val databaseView = Tab(Icon(VaadinIcon.DATABASE), Span("Bancos de dados"))
+    // TODO pesquisas de atendimento
     private val tabs = Tabs(parameterView, databaseView)
     private val content = VerticalLayout()
     private val dbBinder = Binder(Database::class.java)

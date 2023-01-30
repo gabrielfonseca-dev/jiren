@@ -5,6 +5,7 @@ import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.*
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -48,9 +49,9 @@ class HomeView(
     private var user = User()
     private var monitoring = Monitoring()
     private val modal = Dialog()
-    private val teamView = Tab(Icon("users"), Span("Equipe"))
-    private val monitoringView = Tab(Icon("warning"), Span("Monitoramento"))
-    private val shitView = Tab(Icon("user-clock"), Span("Plantões"))
+    private val teamView = Tab(Icon(VaadinIcon.USERS), Span("Equipe"))
+    private val monitoringView = Tab(Icon(VaadinIcon.WARNING), Span("Monitoramento"))
+    private val shitView = Tab(Icon(VaadinIcon.USER_CLOCK), Span("Plantões"))
     private val tabs = Tabs(monitoringView, teamView, shitView)
     private val content = VerticalLayout()
 
