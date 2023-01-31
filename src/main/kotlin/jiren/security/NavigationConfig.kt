@@ -53,7 +53,7 @@ class NavigationConfig(var userRepository: UserRepository, var userController: U
         if (ScriptView::class.java == event.navigationTarget && (user)?.role?.permissions?.find { p -> p.code == ScriptView::class.simpleName } == null || user?.role?.name != "ADMIN") {
             event.rerouteTo(HomeView::class.java)
         }
-        if (ChatView::class.java == event.navigationTarget && (user)?.role?.permissions?.find { p -> p.code == ChatView::class.simpleName } == null || user?.role?.name != "ADMIN") {
+        if (ChatComponent::class.java == event.navigationTarget && (user)?.role?.permissions?.find { p -> p.code == ChatComponent::class.simpleName } == null || user?.role?.name != "ADMIN") {
             event.rerouteTo(HomeView::class.java)
         }
         if (LogView::class.java == event.navigationTarget && (user)?.role?.permissions?.find { p -> p.code == LogView::class.simpleName } == null) {

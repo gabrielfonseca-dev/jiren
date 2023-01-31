@@ -45,7 +45,7 @@ class MainLayout(val userController: UserController, val messageController: Mess
     private val nav = Nav()
     private val menuList = VerticalLayout()
     private val livechat = HorizontalLayout()
-    private val chatList: MutableList<ChatView.ChatInfo> = ArrayList()
+    private val chatList: MutableList<ChatComponent.ChatInfo> = ArrayList()
     private var permissions: MutableList<Permission> = ArrayList()
     private var binder = Binder(User::class.java)
 
@@ -66,15 +66,15 @@ class MainLayout(val userController: UserController, val messageController: Mess
         this.livechat.alignItems = FlexComponent.Alignment.CENTER
     }
 
-    private fun createChat(chatView: ChatView) {
+    private fun createChat(chatComponent: ChatComponent) {
         var openConversations = userController.getOpenInstances(userController.findByUsername(SecurityService().authenticatedUser ?: ""))
         if (openConversations.isNotEmpty()) {
             for (i in 0 until livechat.componentCount) {
                 openConversations = openConversations.filter { it.id.toString() != livechat.getComponentAt(i).id.toString() }
             }
-            chatView.chatList = this.chatList
-            chatView.livechat = this.livechat
-            chatView.createChat(openConversations)
+            chatComponent.chatList = this.chatList
+            chatComponent.livechat = this.livechat
+            chatComponent.createChat(openConversations)
         }
     }
 
@@ -118,12 +118,12 @@ class MainLayout(val userController: UserController, val messageController: Mess
         val menuComponents = HorizontalLayout(homeBtn, livechat)
 
         if((userController.findByUsername(SecurityService().authenticatedUser ?: "")?.enableShift == true)) {
-            val chatView = ChatView(messageController, userController, twilioClient)
-            chatView.chatList = this.chatList
-            chatView.livechat = this.livechat
-            chatView.setId("refresher")
-            createChat(chatView)
-            menuComponents.add(chatView)
+            val chatComponent = ChatComponent(messageController, userController, twilioClient)
+            chatComponent.chatList = this.chatList
+            chatComponent.livechat = this.livechat
+            chatComponent.setId("refresher")
+            createChat(chatComponent)
+            menuComponents.add(chatComponent)
         }
 
         val titleDiv = HorizontalLayout()

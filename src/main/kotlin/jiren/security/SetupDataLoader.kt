@@ -33,7 +33,7 @@ class SetupDataLoader(
         val views = listOf(
             AutomationView::class.java.simpleName,
             ConfigurationView::class.java.simpleName,
-            LiveChatView::class.java.simpleName,
+            ChatView::class.java.simpleName,
             LogView::class.java.simpleName,
             MonitoringView::class.java.simpleName,
             ScriptView::class.java.simpleName,
