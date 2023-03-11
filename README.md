@@ -1,6 +1,6 @@
 **Jiren**
 -
-Uma aplicação de gerenciamento e monitoramento de serviços que permite aos usuários acompanhar o status de vários serviços, realizar atualizações controladas em bancos de dados, agendar tarefas SQL e obter suporte online via WhatsApp.
+Jiren é uma aplicação de gerenciamento e monitoramento de serviços que permite aos usuários acompanhar o status de vários serviços, realizar atualizações controladas em bancos de dados, agendar tarefas SQL e fornecer suporte online via WhatsApp.
 
 ---
 **Casos de Uso e Funcionalidades**
